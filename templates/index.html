@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Agriculture AI — Crop Predictor</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+
+<!-- ── Spinner Overlay ─────────────────────────────────────── -->
+<div id="spinner-overlay">
+  <div class="spinner"></div>
+  <p class="spinner-text">Analyzing soil conditions…</p>
+</div>
+
+<!-- ── Navbar ──────────────────────────────────────────────── -->
+<nav class="navbar">
+  <a href="/" class="navbar-brand">
+    <div class="navbar-logo">🌿</div>
+    <div class="navbar-title">Smart <span>Agriculture</span> AI</div>
+  </a>
+  <span class="navbar-badge">ML Powered</span>
+</nav>
+
+<!-- ── Hero ────────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="hero-eyebrow">Precision Farming Intelligence</div>
+  <h1 class="hero-title">Find the <span class="accent">perfect crop</span><br/>for your land</h1>
+  <p class="hero-sub">Enter your soil and climate data below to receive AI-driven crop recommendations with profit analysis.</p>
+</section>
+
+<!-- ── Main Form ────────────────────────────────────────────── -->
+<main class="container-main">
+
+  {% if error %}
+  <div class="alert-error">⚠ {{ error }}</div>
+  {% endif %}
+
+  <form id="predict-form" method="POST" action="/predict" novalidate>
+
+    <!-- Soil Nutrients -->
+    <div class="card" style="margin-bottom:1.5rem;">
+      <div class="card-header">
+        <div class="card-header-icon">🪸</div>
+        <div>
+          <div class="card-header-title">Soil Nutrients</div>
+          <div class="card-header-sub">Nitrogen, Phosphorus & Potassium values (mg/kg)</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="form-grid">
+
+          <!-- N -->
+          <div class="form-group">
+            <label class="form-label" for="N">Nitrogen (N)</label>
+            <div class="slider-group">
+              <div class="slider-row">
+                <input type="range" id="N_range" min="0" max="140" value="50" step="1"
+                       oninput="syncInput('N', this.value)">
+                <input type="number" id="N" name="N" class="slider-number"
+                       min="0" max="140" value="50"
+                       oninput="syncRange('N', this.value)" required>
+              </div>
+              <div class="range-hints"><span>0</span><span>70</span><span>140</span></div>
+            </div>
+          </div>
+
+          <!-- P -->
+          <div class="form-group">
+            <label class="form-label" for="P">Phosphorus (P)</label>
+            <div class="slider-group">
+              <div class="slider-row">
+                <input type="range" id="P_range" min="5" max="145" value="50" step="1"
+                       oninput="syncInput('P', this.value)">
+                <input type="number" id="P" name="P" class="slider-number"
+                       min="5" max="145" value="50"
+                       oninput="syncRange('P', this.value)" required>
+              </div>
+              <div class="range-hints"><span>5</span><span>75</span><span>145</span></div>
+            </div>
+          </div>
+
+          <!-- K -->
+          <div class="form-group">
+            <label class="form-label" for="K">Potassium (K)</label>
+            <div class="slider-group">
+              <div class="slider-row">
+                <input type="range" id="K_range" min="5" max="205" value="48" step="1"
+                       oninput="syncInput('K', this.value)">
+                <input type="number" id="K" name="K" class="slider-number"
+                       min="5" max="205" value="48"
+                       oninput="syncRange('K', this.value)" required>
+              </div>
+              <div class="range-hints"><span>5</span><span>105</span><span>205</span></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Climate & Soil Conditions -->
+    <div class="card" style="margin-bottom:1.5rem;">
+      <div class="card-header">
+        <div class="card-header-icon">🌡</div>
+        <div>
+          <div class="card-header-title">Climate & Soil Conditions</div>
+          <div class="card-header-sub">Environmental parameters for crop suitability</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="form-grid">
+
+          <!-- Temperature -->
+          <div class="form-group">
+            <label class="form-label" for="temperature">Temperature (°C)</label>
+            <div class="slider-group">
+              <div class="slider-row">
+                <input type="range" id="temperature_range" min="0" max="50" value="25" step="0.1"
+                       oninput="syncInput('temperature', this.value)">
+                <input type="number" id="temperature" name="temperature" class="slider-number"
+                       min="0" max="50" step="0.1" value="25.0"
+                       oninput="syncRange('temperature', this.value)" required>
+              </div>
+              <div class="range-hints"><span>0°</span><span>25°</span><span>50°</span></div>
+            </div>
+          </div>
+
+          <!-- Humidity -->
+          <div class="form-group">
+            <label class="form-label" for="humidity">Humidity (%)</label>
+            <div class="slider-group">
+              <div class="slider-row">
+                <input type="range" id="humidity_range" min="14" max="100" value="70" step="0.1"
+                       oninput="syncInput('humidity', this.value)">
+                <input type="number" id="humidity" name="humidity" class="slider-number"
+                       min="14" max="100" step="0.1" value="70.0"
+                       oninput="syncRange('humidity', this.value)" required>
+              </div>
+              <div class="range-hints"><span>14%</span><span>57%</span><span>100%</span></div>
+            </div>
+          </div>
+
+          <!-- pH -->
+          <div class="form-group">
+            <label class="form-label" for="ph">Soil pH</label>
+            <div class="slider-group">
+              <div class="slider-row">
+                <input type="range" id="ph_range" min="3.5" max="9.5" value="6.5" step="0.01"
+                       oninput="syncInput('ph', this.value)">
+                <input type="number" id="ph" name="ph" class="slider-number"
+                       min="3.5" max="9.5" step="0.01" value="6.5"
+                       oninput="syncRange('ph', this.value)" required>
+              </div>
+              <div class="range-hints"><span>3.5</span><span>6.5</span><span>9.5</span></div>
+            </div>
+          </div>
+
+          <!-- Rainfall -->
+          <div class="form-group">
+            <label class="form-label" for="rainfall">Rainfall (mm)</label>
+            <div class="slider-group">
+              <div class="slider-row">
+                <input type="range" id="rainfall_range" min="20" max="300" value="100" step="1"
+                       oninput="syncInput('rainfall', this.value)">
+                <input type="number" id="rainfall" name="rainfall" class="slider-number"
+                       min="20" max="300" step="1" value="100"
+                       oninput="syncRange('rainfall', this.value)" required>
+              </div>
+              <div class="range-hints"><span>20mm</span><span>160mm</span><span>300mm</span></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Submit -->
+    <button type="submit" class="btn-predict" id="submit-btn">
+      <span id="btn-text">🔍 &nbsp; Predict Optimal Crop</span>
+    </button>
+
+  </form>
+</main>
+
+<footer>
+  Built with <span>♥</span> · Smart Agriculture AI · RandomForest ML Model
+</footer>
+
+<script>
+  /* ── Slider ↔ Number sync ─────────────────────────── */
+  function syncInput(id, val) {
+    const num = document.getElementById(id);
+    num.value = parseFloat(val);
+    clearError(id);
+  }
+
+  function syncRange(id, val) {
+    const rng = document.getElementById(id + '_range');
+    if (rng) rng.value = val;
+    clearError(id);
+  }
+
+  function clearError(id) {
+    document.getElementById(id)?.classList.remove('invalid');
+  }
+
+  /* ── Client-side validation ───────────────────────── */
+  document.getElementById('predict-form').addEventListener('submit', function(e) {
+    const fields = ['N','P','K','temperature','humidity','ph','rainfall'];
+    let valid = true;
+
+    fields.forEach(id => {
+      const el = document.getElementById(id);
+      const val = parseFloat(el.value);
+      const min = parseFloat(el.min);
+      const max = parseFloat(el.max);
+      if (isNaN(val) || val < min || val > max) {
+        el.classList.add('invalid');
+        valid = false;
+      }
+    });
+
+    if (!valid) {
+      e.preventDefault();
+      return;
+    }
+
+    /* Show spinner */
+    document.getElementById('spinner-overlay').classList.add('active');
+  });
+</script>
+</body>
+</html>
